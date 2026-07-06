@@ -1,0 +1,11 @@
+<!DOCTYPE html><html lang='es'><head><meta charset='UTF-8'><title>Mapa CSV</title>
+<link rel='stylesheet' href='https://unpkg.com/leaflet/dist/leaflet.css'>
+<script src='https://unpkg.com/leaflet/dist/leaflet.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js'></script>
+<style>body{font-family:Arial;margin:0}#map{height:70vh}</style></head><body>
+<input type='file' id='f' accept='.csv'><div id='map'></div><table border=1><thead><tr><th>Nombre</th><th>Lat</th><th>Lon</th><th>Desc</th></tr></thead><tbody></tbody></table>
+<script>
+let map=L.map('map').setView([-34.6,-58.38],5);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);let ms=[];
+f.onchange=e=>Papa.parse(e.target.files[0],{header:true,complete:r=>{ms.forEach(m=>map.removeLayer(m));ms=[];let b=[],tb=document.querySelector('tbody');tb.innerHTML='';
+r.data.forEach(x=>{if(!x.Latitud||!x.Longitud)return;let la=+x.Latitud,lo=+x.Longitud,m=L.marker([la,lo]).addTo(map).bindPopup('<b>'+x.Nombre+'</b><br>'+x.Descripcion);ms.push(m);b.push([la,lo]);tb.innerHTML+=`<tr><td>${x.Nombre}</td><td>${la}</td><td>${lo}</td><td>${x.Descripcion}</td></tr>`});if(b.length)map.fitBounds(b);}});
+</script></body></html>
