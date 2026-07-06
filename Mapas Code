@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Visualizador de archivos en mapa</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f5f5f5;
+}
+
+header{
+    background:#2196F3;
+    color:white;
+    padding:15px;
+    font-size:22px;
+}
+
+#map{
+    height:70vh;
+}
+
+#panel{
+    padding:15px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+}
+
+td,th{
+    border:1px solid #ccc;
+    padding:8px;
+}
+
+input{
+    margin:15px 0;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+Visualizador de archivos
+</header>
+
+<div id="panel">
+
+<input type="file" id="archivo" accept=".csv">
+
+<p>El archivo debe contener:</p>
+
+<pre>
+Nombre,Latitud,Longitud,Descripcion
+</pre>
+
+</div>
+
+<div id="map"></div>
+
+<h2 style="padding-left:15px">Ítems encontrados</h2>
+
+<table id="tabla">
+<thead>
+<tr>
+<th>Nombre</th>
+<th>Latitud</th>
+<th>Longitud</th>
+<th>Descripción</th>
+</tr>
+</thead>
+
+<tbody></tbody>
+
+</table>
+
+<script>
+
+var map=L.map('map').setView([-34.6037,-58.3816],5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+maxZoom:19
+}).addTo(map);
+
+let markers=[];
+
+document.getElementById("archivo").addEventListener("change",function(e){
+
+markers.forEach(m=>map.removeLayer(m));
+markers=[];
+
+Papa.parse(e.target.files[0],{
+
+header:true,
+
+complete:function(results){
+
+let tbody=document.querySelector("#tabla tbody");
+tbody.innerHTML="";
+
+let bounds=[];
+
+results.data.forEach(item=>{
+
+if(!item.Latitud || !item.Longitud) return;
+
+let lat=parseFloat(item.Latitud);
+let lon=parseFloat(item.Longitud);
+
+let marker=L.marker([lat,lon]).addTo(map);
+
+marker.bindPopup(
+"<b>"+item.Nombre+"</b><br>"+item.Descripcion
+);
+
+markers.push(marker);
+
+bounds.push([lat,lon]);
+
+let fila=`
+<tr>
+<td>${item.Nombre}</td>
+<td>${lat}</td>
+<td>${lon}</td>
+<td>${item.Descripcion}</td>
+</tr>`;
+
+tbody.innerHTML+=fila;
+
+});
+
+if(bounds.length>0){
+map.fitBounds(bounds);
+}
+
+}
+
+});
+
+});
+
+</script>
+
+</body>
+</html>
